@@ -334,6 +334,7 @@ Respond with only the raw JSON object.`
     <div style={S.root}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        html, body, #root { width: 100%; margin: 0; padding: 0; background: #09090D; }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
@@ -1047,7 +1048,7 @@ function MonthDetail({ monthKey, soldItems, calcProfit, fmt, fmtInt, fmtDate, on
   const spend   = its.reduce((s,i)=>s+(parseFloat(i.cogs)||0)*(parseFloat(i.qty)||1),0);
 
   return (
-    <div style={{position:"fixed",inset:0,background:"#09090D",zIndex:40,display:"flex",flexDirection:"column",maxWidth:480,margin:"0 auto",animation:"slideInRight 0.32s cubic-bezier(0.34,1.1,0.64,1)"}}>
+    <div style={{position:"fixed",inset:0,background:"#09090D",zIndex:40,display:"flex",flexDirection:"column",animation:"slideInRight 0.32s cubic-bezier(0.34,1.1,0.64,1)"}}>
       <style>{`@keyframes slideInRight{from{opacity:0;transform:translateX(32px)}to{opacity:1;transform:translateX(0)}}`}</style>
 
       {/* Header */}
@@ -1112,7 +1113,7 @@ function MonthDetail({ monthKey, soldItems, calcProfit, fmt, fmtInt, fmtDate, on
 
 // ── Styles ──────────────────────────────────────────────────────────────────
 const S = {
-  root: { background:"#09090D", minHeight:"100vh", fontFamily:"'Inter',system-ui,-apple-system,sans-serif", color:"#C8C8D8", display:"flex", flexDirection:"column", maxWidth:"100vw", margin:"0 auto", position:"relative" },
+  root: { background:"#09090D", minHeight:"100vh", fontFamily:"'Inter',system-ui,-apple-system,sans-serif", color:"#C8C8D8", display:"flex", flexDirection:"column", width:"100%", position:"relative" },
 
   // Header
   header:      { background:"#09090Dee", backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)", borderBottom:"1px solid #15151D", padding:"15px 20px", position:"sticky", top:0, zIndex:10 },
@@ -1127,7 +1128,7 @@ const S = {
   main: { flex:1, padding:"16px 16px 88px", overflowY:"auto" },
 
   // Nav
-  nav:    { position:"fixed", bottom:0, left:"50%", transform:"translateX(-50%)", width:"100%", maxWidth:480, background:"#0D0D12", borderTop:"1px solid #15151D", display:"flex", zIndex:20, paddingBottom:"env(safe-area-inset-bottom,0px)" },
+  nav:    { position:"fixed", bottom:0, left:0, right:0, width:"100%", background:"#0D0D12", borderTop:"1px solid #15151D", display:"flex", zIndex:20, paddingBottom:"env(safe-area-inset-bottom,0px)" },
   navBtn: { flex:1, background:"none", border:"none", cursor:"pointer", padding:"11px 0 13px", display:"flex", flexDirection:"column", alignItems:"center", gap:4 },
 
   // Hero
