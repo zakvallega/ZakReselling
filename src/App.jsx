@@ -608,7 +608,7 @@ Respond with only the raw JSON object.`
         </div>
 
       ) : (
-        <>
+        <div>
           {/* HEADER */}
           <header style={S.header}>
             <div style={S.headerInner}>
@@ -674,7 +674,7 @@ Respond with only the raw JSON object.`
           </nav>
           </div>{/* end main column */}
         </div>{/* end app-shell */}
-      )}
+      </div>
       {/* Month detail overlay — root level so it covers everything */}
       {monthDetail && (
         <MonthDetail
