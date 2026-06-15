@@ -336,9 +336,45 @@ Respond with only the raw JSON object.`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         html, body, #root { width: 100%; margin: 0; padding: 0; background: #09090D; }
 
+        /* Glass card effect */
+        .glass { 
+          background: rgba(255,255,255,0.03) !important;
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255,255,255,0.06) !important;
+          box-shadow: 0 1px 0 0 rgba(255,255,255,0.04) inset, 0 8px 32px rgba(0,0,0,0.4);
+        }
+        .glass-hero {
+          background: linear-gradient(135deg, rgba(107,126,196,0.08) 0%, rgba(76,175,125,0.04) 100%) !important;
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(107,126,196,0.15) !important;
+          box-shadow: 0 0 0 1px rgba(255,255,255,0.03) inset, 0 20px 60px rgba(0,0,0,0.5), 0 0 80px rgba(107,126,196,0.06);
+        }
+        /* Profit glow */
+        .profit-positive { text-shadow: 0 0 40px rgba(76,175,125,0.4); }
+        .profit-negative { text-shadow: 0 0 40px rgba(184,92,110,0.4); }
+        /* Card hover */
+        .hover-card { transition: transform 0.18s cubic-bezier(0.34,1.3,0.64,1), box-shadow 0.18s ease, background 0.15s ease !important; cursor: pointer; }
+        .hover-card:hover { transform: translateY(-1px); box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05) !important; background: #111118 !important; }
+        .hover-card:active { transform: scale(0.99); }
+        /* Scroll bar */
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #2A2A38; border-radius: 2px; }
+        /* Chart bar animation */
+        @keyframes barGrow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+        /* Number pop */
+        @keyframes numPop { 0%{transform:scale(1)} 40%{transform:scale(1.04)} 100%{transform:scale(1)} }
+        .num-pop { animation: numPop 0.35s cubic-bezier(0.34,1.5,0.64,1); }
+        /* Shimmer for loading */
+        @keyframes shimmer { from{background-position:-200% 0} to{background-position:200% 0} }
+        .shimmer { background: linear-gradient(90deg,#15151D 25%,#1E1E28 50%,#15151D 75%); background-size:200%; animation: shimmer 1.5s infinite; }
+
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
         input::placeholder { color: #3A3A4A; }
+        input:focus, select:focus { border-color: rgba(107,126,196,0.5) !important; box-shadow: 0 0 0 3px rgba(107,126,196,0.1); outline: none; }
         select option { background: #0E0E12; }
 
         @keyframes fadeUp    { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
@@ -691,10 +727,10 @@ function Dashboard({ items, soldItems, listedItems, incomingItems, totalProfit, 
         const tpColor  = totalProfit>=0?"#4CAF7D":"#B85C6E";
         const cpColor  = currentProfit>=0?"#4CAF7D":"#B85C6E";
         return (
-          <div className="hero-card" style={S.heroCard}>
+          <div className="hero-card glass-hero" style={S.heroCard}>
             {/* Monthly profit — the star */}
             <div style={S.heroEyebrow}>{monthName}</div>
-            <div style={{fontSize:50,fontWeight:800,letterSpacing:"-2.5px",fontVariantNumeric:"tabular-nums",lineHeight:1,color:mpColor,marginBottom:4,display:"flex",alignItems:"center",flexWrap:"nowrap"}}>
+            <div className={monthProfit>=0?"profit-positive":"profit-negative"} style={{fontSize:50,fontWeight:800,letterSpacing:"-2.5px",fontVariantNumeric:"tabular-nums",lineHeight:1,color:mpColor,marginBottom:4,display:"flex",alignItems:"center",flexWrap:"nowrap"}}>
               <Counter value={monthProfit}/>
               {saleTag && <SaleTag profit={saleTag.profit} fmt={fmt} onDone={onSaleTagDone}/>}
             </div>
@@ -737,7 +773,7 @@ function Dashboard({ items, soldItems, listedItems, incomingItems, totalProfit, 
       {/* Stats row */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:8}}>
         {[{l:"Revenue",v:"$"+fmtInt(totalRev),c:"#6B7EC4"},{l:"Spent",v:"$"+fmtInt(totalSpend),c:"#C4784A"},{l:"Locked",v:"$"+fmtInt(locked),c:"#A8873A"}].map(s=>(
-          <div key={s.l} style={S.statTile}>
+          <div key={s.l} className="glass" style={S.statTile}>
             <div style={S.statTileLabel}>{s.l}</div>
             <div style={{...S.statTileVal,color:s.c}}>{s.v}</div>
           </div>
@@ -795,7 +831,7 @@ function Dashboard({ items, soldItems, listedItems, incomingItems, totalProfit, 
           {[...soldItems].sort((a,b)=>new Date(b.dateSold||0)-new Date(a.dateSold||0)).slice(0,5).map(item=>{
             const p=calcProfit(item); const ds=item.dateSold?daysSince(item.dateSold):null;
             return (
-              <div key={item.id} className="item-card" style={{...S.rowCard,cursor:"pointer"}} onClick={()=>onEdit(item)}>
+              <div key={item.id} className="item-card hover-card glass" style={{...S.rowCard}} onClick={()=>onEdit(item)}>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={S.rowTitle}>{item.name}</div>
                   <div style={S.rowMeta}>{item.platform}{item.dateSold?` · ${ds===0?"today":ds===1?"yesterday":fmtDate(item.dateSold)}`:""}</div>
@@ -888,7 +924,7 @@ function Inventory({ filtered, filter, setFilter, urgentReturn, calcProfit, fmt,
         const cardClass = `item-card${isNew?" item-new":""}${exitClass?" "+exitClass:""}`;
 
         return (
-          <div key={item.id} className={cardClass}
+          <div key={item.id} className={cardClass+" glass"}
             style={{...S.itemCard, opacity:item.status==="sold"&&!isExiting?0.65:1, animation: isFlash?"greenFlash 0.6s ease":undefined}}>
             {/* Status bar */}
             <div className="status-bar" style={{...S.itemStatusBar,background:sc}}/>
@@ -1068,7 +1104,7 @@ function MonthDetail({ monthKey, soldItems, calcProfit, fmt, fmtInt, fmtDate, on
         ) : its.map((item,idx)=>{
           const p=calcProfit(item);
           return (
-            <div key={item.id} style={{background:"#0D0D12",border:"1px solid #15151D",borderRadius:14,padding:"14px 16px",marginBottom:10,animation:`fadeUp 0.3s ${idx*0.04}s both ease`}}>
+            <div key={item.id} className="glass" style={{borderRadius:14,padding:"14px 16px",marginBottom:10,animation:`fadeUp 0.3s ${idx*0.04}s both ease`}}>
               {/* Top row */}
               <div style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:8}}>
                 {item.imageUrl&&<img src={item.imageUrl} alt="" onError={e=>e.target.style.display="none"} style={{width:44,height:44,objectFit:"contain",borderRadius:8,background:"#fff",flexShrink:0}}/>}
@@ -1123,21 +1159,21 @@ const S = {
   navBtn: { flex:1, background:"none", border:"none", cursor:"pointer", padding:"11px 0 13px", display:"flex", flexDirection:"column", alignItems:"center", gap:4 },
 
   // Hero
-  heroCard:    { background:"linear-gradient(145deg,#0F0F16 0%,#0C0C14 100%)", border:"1px solid #16161F", borderRadius:20, padding:"24px 22px 22px", marginBottom:10 },
+  heroCard:    { borderRadius:22, padding:"26px 22px 22px", marginBottom:12 },
   heroEyebrow: { fontSize:10, color:"#404050", textTransform:"uppercase", letterSpacing:"0.8px", fontWeight:500, marginBottom:10 },
 
   // Stat tiles
-  statTile:      { background:"#0D0D12", border:"1px solid #15151D", borderRadius:14, padding:"13px 14px" },
+  statTile:      { borderRadius:14, padding:"13px 14px" },
   statTileLabel: { fontSize:9, color:"#353545", textTransform:"uppercase", letterSpacing:"0.6px", fontWeight:500, marginBottom:5 },
   statTileVal:   { fontSize:17, fontWeight:800, fontVariantNumeric:"tabular-nums", letterSpacing:"-0.5px" },
 
   // Row cards (dashboard list items)
-  rowCard:  { background:"#0D0D12", border:"1px solid #15151D", borderRadius:12, padding:"13px 14px", marginBottom:6, display:"flex", alignItems:"center", gap:12, transition:"background 0.15s" },
+  rowCard:  { borderRadius:12, padding:"13px 14px", marginBottom:6, display:"flex", alignItems:"center", gap:12 },
   rowTitle: { fontWeight:600, fontSize:13, color:"#C0C0D0", marginBottom:3, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" },
   rowMeta:  { fontSize:11, color:"#404050", display:"flex", alignItems:"center", gap:5 },
 
   // Inventory item cards
-  itemCard:    { background:"#0D0D12", border:"1px solid #15151D", borderRadius:14, marginBottom:8, overflow:"hidden", display:"flex", transition:"background 0.15s" },
+  itemCard:    { borderRadius:14, marginBottom:8, overflow:"hidden", display:"flex" },
   itemStatusBar:{ width:3, flexShrink:0 },
   itemBody:    { flex:1, padding:"13px 14px" },
   itemName:    { fontWeight:600, fontSize:14, color:"#D0D0E0", flex:1, marginRight:8, lineHeight:1.3, letterSpacing:"-0.2px" },
@@ -1164,7 +1200,7 @@ const S = {
 
   // Modals / sheets
   overlay:      { position:"fixed", inset:0, background:"rgba(0,0,0,0.75)", backdropFilter:"blur(4px)", WebkitBackdropFilter:"blur(4px)", zIndex:50, display:"flex", alignItems:"flex-end" },
-  sheet:        { background:"#0E0E14", border:"1px solid #1A1A24", borderTop:"1px solid #22222E", borderRadius:"20px 20px 0 0", padding:"16px 20px 36px", width:"100%", animation:"fadeUp 0.25s ease" },
+  sheet:        { background:"rgba(14,14,20,0.95)", backdropFilter:"blur(30px)", WebkitBackdropFilter:"blur(30px)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"24px 24px 0 0", padding:"16px 20px 36px", width:"100%", animation:"fadeUp 0.3s cubic-bezier(0.34,1.1,0.64,1)", boxShadow:"0 -8px 40px rgba(0,0,0,0.6)" },
   sheetHandle:  { width:36, height:4, background:"#22222E", borderRadius:2, margin:"0 auto 20px" },
   sheetTitle:   { fontSize:17, fontWeight:700, color:"#E0E0F0", letterSpacing:"-0.4px" },
   sheetSub:     { fontSize:13, color:"#505060", marginTop:4, marginBottom:0 },
