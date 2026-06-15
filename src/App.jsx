@@ -633,16 +633,6 @@ Respond with only the raw JSON object.`
           </header>
 
           {/* CONTENT */}
-          {/* Month detail overlay */}
-          {monthDetail && (
-            <MonthDetail
-              monthKey={monthDetail}
-              soldItems={soldItems}
-              calcProfit={calcProfit} fmt={fmt} fmtInt={fmtInt} fmtDate={fmtDate}
-              onClose={()=>setMonthDetail(null)}
-            />
-          )}
-
           <main style={S.main}>
             {!loaded ? (
               <div style={S.loadingWrap}><div style={S.spinner}/></div>
@@ -684,6 +674,15 @@ Respond with only the raw JSON object.`
           </nav>
           </div>{/* end main column */}
         </div>{/* end app-shell */}
+      )}
+      {/* Month detail overlay — root level so it covers everything */}
+      {monthDetail && (
+        <MonthDetail
+          monthKey={monthDetail}
+          soldItems={soldItems}
+          calcProfit={calcProfit} fmt={fmt} fmtInt={fmtInt} fmtDate={fmtDate}
+          onClose={()=>setMonthDetail(null)}
+        />
       )}
     </div>
   );
