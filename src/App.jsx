@@ -334,6 +334,19 @@ Respond with only the raw JSON object.`
     <div style={S.root}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        body { margin: 0; background: #09090D; }
+        #root { display: flex; min-height: 100vh; }
+        .app-shell { flex: 1; display: flex; }
+        @media (min-width: 768px) {
+          .app-shell { display: grid; grid-template-columns: 260px 1fr; max-width: 1200px; margin: 0 auto; width: 100%; }
+          .mobile-nav { display: none !important; }
+          .desktop-nav { display: flex !important; }
+          .main-content { border-left: 1px solid #15151D; }
+        }
+        @media (max-width: 767px) {
+          .desktop-nav { display: none !important; }
+          .app-shell { flex-direction: column; width: 100%; }
+        }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
         input::placeholder { color: #3A3A4A; }
@@ -656,8 +669,8 @@ Respond with only the raw JSON object.`
             )}
           </main>
 
-          {/* BOTTOM NAV */}
-          <nav style={S.nav}>
+          {/* BOTTOM NAV — mobile only */}
+          <nav className="mobile-nav" style={S.nav}>
             {[
               {id:"dashboard",label:"Overview",  icon:<DashIco/>},
               {id:"inventory",label:"Inventory", icon:<BoxIco/>},
@@ -669,7 +682,8 @@ Respond with only the raw JSON object.`
               </button>
             ))}
           </nav>
-        </>
+          </div>{/* end main column */}
+        </div>{/* end app-shell */}
       )}
     </div>
   );
@@ -1112,7 +1126,7 @@ function MonthDetail({ monthKey, soldItems, calcProfit, fmt, fmtInt, fmtDate, on
 
 // ── Styles ──────────────────────────────────────────────────────────────────
 const S = {
-  root: { background:"#09090D", minHeight:"100vh", fontFamily:"'Inter',system-ui,-apple-system,sans-serif", color:"#C8C8D8", display:"flex", flexDirection:"column", maxWidth:480, margin:"0 auto", position:"relative" },
+  root: { background:"#09090D", minHeight:"100vh", fontFamily:"'Inter',system-ui,-apple-system,sans-serif", color:"#C8C8D8", display:"flex", flexDirection:"column", maxWidth:"100vw", margin:"0 auto", position:"relative" },
 
   // Header
   header:      { background:"#09090Dee", backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)", borderBottom:"1px solid #15151D", padding:"15px 20px", position:"sticky", top:0, zIndex:10 },
