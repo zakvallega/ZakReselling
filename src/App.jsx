@@ -670,8 +670,6 @@ Respond with only the raw JSON object.`
                 onEdit={item=>{ setForm({...BLANK,...item}); setEditId(item.id); setView("add"); }}/>
             ) : view==="monthly" ? (
               <Monthly soldItems={soldItems} calcProfit={calcProfit} fmt={fmt} fmtInt={fmtInt} fmtDate={fmtDate} onOpenMonth={setMonthDetail}/>
-            ) : view==="pricecheck" ? (
-              <PriceCheck fmt={fmt}/>
             ) : (
               <Inventory filtered={filtered} filter={filter} setFilter={setFilter} urgentReturn={urgentReturn}
                 calcProfit={calcProfit} fmt={fmt} urgColor={urgColor} fmtDate={fmtDate} daysSince={daysSince}
@@ -692,7 +690,6 @@ Respond with only the raw JSON object.`
               {id:"dashboard",label:"Overview",  icon:<DashIco/>},
               {id:"inventory",label:"Inventory", icon:<BoxIco/>},
               {id:"monthly",  label:"Monthly",   icon:<CalIco/>},
-              {id:"pricecheck",label:"Price Check", icon:<SearchIco/>},
             ].map(tab=>(
               <button key={tab.id} className="nav-btn" style={S.navBtn} onClick={()=>setView(tab.id)}>
                 <div className="nav-icon" style={{color:view===tab.id?"#6B7EC4":"#3A3A50",transition:"color 0.2s"}}>{tab.icon}</div>
@@ -993,7 +990,6 @@ const SHead      = ({title,sub}) => <div style={{display:"flex",justifyContent:"
 const EmptyState = ({icon,title,sub,action}) => <div style={{textAlign:"center",padding:"64px 20px"}}><div style={{fontSize:28,marginBottom:12,color:"#2A2A38"}}>{icon}</div><div style={{fontSize:15,fontWeight:600,color:"#505060",marginBottom:4}}>{title}</div>{sub&&<div style={{fontSize:12,color:"#353545"}}>{sub}</div>}{action&&<button style={{...S.btnPrimary,marginTop:20,maxWidth:180,margin:"20px auto 0",display:"block",fontSize:13,padding:"11px"}} onClick={action.fn}>{action.label}</button>}</div>;
 const DashIco    = () => <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>;
 const CalIco     = () => <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>;
-const SearchIco  = () => <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>;
 const BoxIco     = () => <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>;
 
 // ── Monthly list ────────────────────────────────────────────────────────────
@@ -1142,158 +1138,12 @@ function MonthDetail({ monthKey, soldItems, calcProfit, fmt, fmtInt, fmtDate, on
   );
 }
 
-// ── Price Check ─────────────────────────────────────────────────────────────
-function PriceCheck({ fmt }) {
-  const [query, setQuery]     = useState("");
-  const [results, setResults] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState("");
-
-  const search = async () => {
-    if(!query.trim()) return;
-    setLoading(true); setError(""); setResults(null);
-    try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({
-          model:"claude-sonnet-4-6",
-          max_tokens:1000,
-          tools:[{"type":"web_search_20250305","name":"web_search"}],
-          messages:[{
-            role:"user",
-            content:`Search eBay sold listings for "${query}" and return ONLY a JSON object (no markdown) with:
-{
-  "item": "clean item name",
-  "listings": [
-    {
-      "title": "exact listing title",
-      "price": 94.00,
-      "date": "Apr 12, 2026",
-      "condition": "Used - Good",
-      "shipping": "Free" or "$5.99",
-      "type": "Buy It Now" or "Auction",
-      "bids": 3 or null
-    }
-  ],
-  "summary": {
-    "avg": 92.00,
-    "low": 78.00,
-    "high": 112.00,
-    "count": 8,
-    "suggested_list": 95.00
-  }
-}
-Return up to 8 most recent sold listings. Only raw JSON, no explanation.`
-          }]
-        })
-      });
-      const data = await res.json();
-      const text = data?.content?.filter(b=>b.type==="text").map(b=>b.text).join("") || "";
-      const clean = text.replace(/```json|```/g,"").trim();
-      const parsed = JSON.parse(clean);
-      setResults(parsed);
-    } catch(e) {
-      setError("Couldn't find results — try a more specific search");
-    }
-    setLoading(false);
-  };
-
-  return (
-    <div style={{paddingBottom:80,animation:"fadeUp 0.3s ease"}}>
-      {/* Search bar */}
-      <div className="glass" style={{borderRadius:16,padding:"16px",marginBottom:16}}>
-        <div style={{fontSize:11,color:"#404050",textTransform:"uppercase",letterSpacing:"0.6px",fontWeight:500,marginBottom:10}}>Price Check</div>
-        <div style={{display:"flex",gap:8}}>
-          <input
-            style={{flex:1,background:"#09090D",border:"1px solid #1A1A24",borderRadius:10,padding:"11px 14px",color:"#D0D0E0",fontSize:14,outline:"none",fontFamily:"inherit"}}
-            placeholder="e.g. Milwaukee M18 Drill, Nike Dunk Low..."
-            value={query}
-            onChange={e=>setQuery(e.target.value)}
-            onKeyDown={e=>e.key==="Enter"&&search()}
-          />
-          <button
-            onClick={search}
-            disabled={loading||!query.trim()}
-            style={{background:"#6B7EC4",color:"#fff",border:"none",borderRadius:10,padding:"11px 18px",fontWeight:600,fontSize:13,cursor:"pointer",opacity:loading||!query.trim()?0.5:1,fontFamily:"inherit",whiteSpace:"nowrap"}}>
-            {loading?"…":"Search"}
-          </button>
-        </div>
-        {error && <div style={{fontSize:12,color:"#B85C6E",marginTop:8}}>{error}</div>}
-      </div>
-
-      {/* Loading state */}
-      {loading && (
-        <div style={{textAlign:"center",padding:"40px 20px"}}>
-          <div style={{width:24,height:24,border:"2px solid #1A1A24",borderTopColor:"#6B7EC4",borderRadius:"50%",animation:"spin 0.7s linear infinite",margin:"0 auto 12px"}}/>
-          <div style={{fontSize:13,color:"#404050"}}>Searching eBay sold listings…</div>
-        </div>
-      )}
-
-      {/* Results */}
-      {results && !loading && (
-        <>
-          {/* Summary card */}
-          <div className="glass-hero" style={{borderRadius:16,padding:"18px 20px",marginBottom:14}}>
-            <div style={{fontSize:13,fontWeight:600,color:"#C0C0D0",marginBottom:12,letterSpacing:"-0.2px"}}>{results.item}</div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:12}}>
-              {[
-                {l:"Avg",v:"$"+results.summary?.avg?.toFixed(0),c:"#6B7EC4"},
-                {l:"Low",v:"$"+results.summary?.low?.toFixed(0),c:"#4CAF7D"},
-                {l:"High",v:"$"+results.summary?.high?.toFixed(0),c:"#B85C6E"},
-                {l:"Suggest",v:"$"+results.summary?.suggested_list?.toFixed(0),c:"#A8873A"},
-              ].map(s=>(
-                <div key={s.l} style={{textAlign:"center"}}>
-                  <div style={{fontSize:9,color:"#404050",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:3}}>{s.l}</div>
-                  <div style={{fontSize:16,fontWeight:800,color:s.c,fontVariantNumeric:"tabular-nums"}}>{s.v}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{fontSize:11,color:"#404050"}}>Based on {results.summary?.count} recent sold listings</div>
-          </div>
-
-          {/* Individual listings */}
-          <div style={{fontSize:11,color:"#404050",textTransform:"uppercase",letterSpacing:"0.6px",fontWeight:500,marginBottom:10}}>Recent sales</div>
-          {results.listings?.map((l,i)=>(
-            <div key={i} className="glass hover-card" style={{borderRadius:14,padding:"13px 15px",marginBottom:8,animation:`fadeUp 0.3s ${i*0.05}s both ease`}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
-                <div style={{flex:1,marginRight:12}}>
-                  <div style={{fontSize:13,fontWeight:600,color:"#C0C0D0",lineHeight:1.4,marginBottom:3}}>{l.title}</div>
-                  <div style={{fontSize:11,color:"#404050"}}>
-                    {l.date}
-                    {l.condition&&` · ${l.condition}`}
-                    {l.type&&` · ${l.type}`}
-                    {l.bids&&` · ${l.bids} bids`}
-                  </div>
-                </div>
-                <div style={{textAlign:"right",flexShrink:0}}>
-                  <div style={{fontSize:16,fontWeight:800,color:"#4CAF7D",fontVariantNumeric:"tabular-nums"}}>${parseFloat(l.price).toFixed(2)}</div>
-                  <div style={{fontSize:10,color:"#404050",marginTop:1}}>{l.shipping}</div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </>
-      )}
-
-      {/* Empty state */}
-      {!results && !loading && (
-        <div style={{textAlign:"center",padding:"50px 20px"}}>
-          <div style={{fontSize:32,marginBottom:12,color:"#2A2A38"}}>🔍</div>
-          <div style={{fontSize:15,fontWeight:600,color:"#505060"}}>Search any item</div>
-          <div style={{fontSize:12,color:"#353545",marginTop:4}}>See what it's actually selling for on eBay right now</div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ── Styles ──────────────────────────────────────────────────────────────────
 const S = {
   root: { background:"#09090D", minHeight:"100vh", fontFamily:"'Inter',system-ui,-apple-system,sans-serif", color:"#C8C8D8", display:"flex", flexDirection:"column", width:"100%", position:"relative" },
 
   // Header
-  header:      { background:"#09090Dee", backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)", borderBottom:"1px solid #15151D", padding:"env(safe-area-inset-top, 15px) 20px 15px", position:"sticky", top:0, zIndex:10 },
+  header:      { background:"#09090Dee", backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)", borderBottom:"1px solid #15151D", padding:"env(safe-area-inset-top, 15px) 20px 15px", position:"sticky", top:0, zIndex:10, marginTop:8 },
   headerInner: { display:"flex", justifyContent:"space-between", alignItems:"center" },
   logo:        { display:"flex", alignItems:"baseline", gap:0 },
   logoText:    { fontSize:16, fontWeight:800, color:"#F0F0F8", letterSpacing:"-0.5px" },
