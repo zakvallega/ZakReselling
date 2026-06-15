@@ -684,51 +684,42 @@ function Dashboard({ items, soldItems, listedItems, incomingItems, totalProfit, 
       {/* Hero card */}
       {(() => {
         const currentProfit = totalProfit - locked;
-        const cpColor = currentProfit>=0?"#4CAF7D":"#B85C6E";
-        const tpColor = totalProfit>=0?"#4CAF7D":"#B85C6E";
-        const thisMonthKey = new Date().toISOString().slice(0,7);
-        const monthProfit  = soldItems.filter(i=>i.dateSold&&i.dateSold.slice(0,7)===thisMonthKey).reduce((s,i)=>s+calcProfit(i),0);
+        const thisMonthKey  = new Date().toISOString().slice(0,7);
+        const monthProfit   = soldItems.filter(i=>i.dateSold&&i.dateSold.slice(0,7)===thisMonthKey).reduce((s,i)=>s+calcProfit(i),0);
+        const monthName     = new Date().toLocaleDateString("en-US",{month:"long"});
         const mpColor  = monthProfit>=0?"#4CAF7D":"#B85C6E";
-        const monthName= new Date().toLocaleDateString("en-US",{month:"short"});
+        const tpColor  = totalProfit>=0?"#4CAF7D":"#B85C6E";
+        const cpColor  = currentProfit>=0?"#4CAF7D":"#B85C6E";
         return (
           <div className="hero-card" style={S.heroCard}>
-            {/* Current profit — the star */}
-            <div style={S.heroEyebrow}>All-time profit</div>
-            <div style={{fontSize:46,fontWeight:800,letterSpacing:"-2px",fontVariantNumeric:"tabular-nums",lineHeight:1,color:tpColor,marginBottom:4,display:"flex",alignItems:"center",flexWrap:"nowrap"}}>
-              <Counter value={totalProfit}/>
+            {/* Monthly profit — the star */}
+            <div style={S.heroEyebrow}>{monthName}</div>
+            <div style={{fontSize:50,fontWeight:800,letterSpacing:"-2.5px",fontVariantNumeric:"tabular-nums",lineHeight:1,color:mpColor,marginBottom:4,display:"flex",alignItems:"center",flexWrap:"nowrap"}}>
+              <Counter value={monthProfit}/>
               {saleTag && <SaleTag profit={saleTag.profit} fmt={fmt} onDone={onSaleTagDone}/>}
             </div>
-            <div style={{fontSize:11,color:"#353545",marginBottom:16}}>total earned across all sales</div>
+            <div style={{fontSize:11,color:"#353545",marginBottom:16}}>this month's profit</div>
 
             {/* Divider */}
             <div style={{height:1,background:"#15151D",marginBottom:14}}/>
 
-            {/* All-time + this month + pipeline */}
+            {/* All-time · Current · Locked — smaller supporting stats */}
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <div>
+                <div style={{fontSize:10,color:"#353545",textTransform:"uppercase",letterSpacing:"0.6px",fontWeight:500,marginBottom:3}}>All-time</div>
+                <div style={{fontSize:17,fontWeight:700,letterSpacing:"-0.6px",fontVariantNumeric:"tabular-nums",color:tpColor}}>{totalProfit>=0?"+":""}{fmt(totalProfit)}</div>
+              </div>
+              <div style={{width:1,height:30,background:"#15151D"}}/>
+              <div style={{textAlign:"center"}}>
                 <div style={{fontSize:10,color:"#353545",textTransform:"uppercase",letterSpacing:"0.6px",fontWeight:500,marginBottom:3}}>Current</div>
-                <div style={{fontSize:18,fontWeight:700,letterSpacing:"-0.8px",fontVariantNumeric:"tabular-nums",color:cpColor}}>{currentProfit>=0?"+":""}{fmt(currentProfit)}</div>
+                <div style={{fontSize:17,fontWeight:700,letterSpacing:"-0.6px",fontVariantNumeric:"tabular-nums",color:cpColor}}>{currentProfit>=0?"+":""}{fmt(currentProfit)}</div>
               </div>
-              <div style={{width:1,height:32,background:"#15151D"}}/>
+              <div style={{width:1,height:30,background:"#15151D"}}/>
               <div style={{textAlign:"center"}}>
-                <div style={{fontSize:10,color:"#353545",textTransform:"uppercase",letterSpacing:"0.6px",fontWeight:500,marginBottom:3}}>{monthName}</div>
-                <div style={{fontSize:18,fontWeight:700,letterSpacing:"-0.8px",fontVariantNumeric:"tabular-nums",color:mpColor}}>{monthProfit>=0?"+":""}{fmt(monthProfit)}</div>
+                <div style={{fontSize:10,color:"#353545",textTransform:"uppercase",letterSpacing:"0.6px",fontWeight:500,marginBottom:3}}>Locked</div>
+                <div style={{fontSize:17,fontWeight:700,letterSpacing:"-0.6px",fontVariantNumeric:"tabular-nums",color:"#A8873A"}}>${fmtInt(locked)}</div>
               </div>
-              <div style={{width:1,height:32,background:"#15151D"}}/>
-              <div style={{textAlign:"left"}}>
-                <div style={{fontSize:10,color:"#353545",textTransform:"uppercase",letterSpacing:"0.6px",fontWeight:500,marginBottom:3}}>Incoming</div>
-                <div style={{fontSize:20,fontWeight:700,color:"#A8873A"}}>{incomingItems.length}</div>
-              </div>
-              <div style={{width:1,height:32,background:"#15151D"}}/>
-              <div style={{textAlign:"center"}}>
-                <div style={{fontSize:10,color:"#353545",textTransform:"uppercase",letterSpacing:"0.6px",fontWeight:500,marginBottom:3}}>Listed</div>
-                <div style={{fontSize:20,fontWeight:700,color:"#6B7EC4"}}>{listedItems.length}</div>
-              </div>
-              <div style={{width:1,height:32,background:"#15151D"}}/>
-              <div style={{textAlign:"center"}}>
-                <div style={{fontSize:10,color:"#353545",textTransform:"uppercase",letterSpacing:"0.6px",fontWeight:500,marginBottom:3}}>Sold</div>
-                <div style={{fontSize:20,fontWeight:700,color:"#C0C0D0"}}>{soldItems.length}</div>
-              </div>
+
             </div>
 
             {totalRev>0 && (
@@ -1116,7 +1107,7 @@ const S = {
   root: { background:"#09090D", minHeight:"100vh", fontFamily:"'Inter',system-ui,-apple-system,sans-serif", color:"#C8C8D8", display:"flex", flexDirection:"column", width:"100%", position:"relative" },
 
   // Header
-  header:      { background:"#09090Dee", backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)", borderBottom:"1px solid #15151D", padding:"15px 20px", position:"sticky", top:0, zIndex:10 },
+  header:      { background:"#09090Dee", backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)", borderBottom:"1px solid #15151D", padding:"env(safe-area-inset-top, 15px) 20px 15px", position:"sticky", top:0, zIndex:10 },
   headerInner: { display:"flex", justifyContent:"space-between", alignItems:"center" },
   logo:        { display:"flex", alignItems:"baseline", gap:0 },
   logoText:    { fontSize:16, fontWeight:800, color:"#F0F0F8", letterSpacing:"-0.5px" },
