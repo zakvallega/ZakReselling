@@ -328,7 +328,19 @@ Respond with only the raw JSON object.`
     if(filter==="sold")     return i.status==="sold";
     if(filter==="returns")  return !!i.returnStore&&i.status!=="sold";
     return true;
-  }).sort((a,b)=>filter==="all"?(STATUS_ORDER[a.status]??0)-(STATUS_ORDER[b.status]??0):0);
+  }).sort((a,b)=>{
+    // First sort by status order (incoming → listed → sold)
+    const statusDiff = (STATUS_ORDER[a.status]??0)-(STATUS_ORDER[b.status]??0);
+    if(filter!=="all") {
+      // Within single-status filters, most recent first
+      if(a.status==="sold"&&b.status==="sold") return new Date(b.dateSold||0)-new Date(a.dateSold||0);
+      return b.id-a.id; // higher id = added more recently
+    }
+    if(statusDiff!==0) return statusDiff;
+    // Within same status group, most recent first
+    if(a.status==="sold") return new Date(b.dateSold||0)-new Date(a.dateSold||0);
+    return b.id-a.id;
+  });
 
   return (
     <div style={S.root}>
@@ -847,7 +859,13 @@ function Dashboard({ items, soldItems, listedItems, incomingItems, totalProfit, 
       {items.length>0&&(
         <section style={{marginTop:24}}>
           <SHead title="All items"/>
-          {items.map(item=>{
+          {[...items].sort((a,b)=>{
+            const SO={incoming:0,listed:1,sold:2};
+            const sd=(SO[a.status]??0)-(SO[b.status]??0);
+            if(sd!==0) return sd;
+            if(a.status==="sold") return new Date(b.dateSold||0)-new Date(a.dateSold||0);
+            return b.id-a.id;
+          }).map(item=>{
             const p=calcProfit(item);
             return (
               <div key={item.id} className="item-card" style={{...S.rowCard,cursor:"pointer",opacity:item.status==="sold"?0.55:1}} onClick={()=>onEdit(item)}>
